@@ -25,8 +25,12 @@
  ****************************************************************************/
 
 #include <nuttx/config.h>
+
 #include <sys/types.h>
 #include <syslog.h>
+
+#include <netutils/netlib.h>
+#include <netutils/dhcpd.h>
 
 #include "espressif/esp_wlan_netdev.h"
 
@@ -75,6 +79,9 @@ int board_wlan_init(void)
       return ret;
     }
 #endif /* ESP_WLAN_HAS_SOFTAP */
+
+  netlib_ifup("wlan0");
+  dhcpd_start("wlan0");
 
   return ret;
 }
