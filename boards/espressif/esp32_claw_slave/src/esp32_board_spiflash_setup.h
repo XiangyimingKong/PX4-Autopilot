@@ -1,7 +1,5 @@
 /****************************************************************************
- * boards/xtensa/esp32/common/src/esp32_board_wlan.c
- *
- * SPDX-License-Identifier: Apache-2.0
+ * boards/xtensa/esp32/common/include/esp32_board_spiflash.h
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -20,69 +18,51 @@
  *
  ****************************************************************************/
 
+#ifndef __BOARDS_XTENSA_ESP32_COMMON_INCLUDE_ESP32_BOARD_SPIFLASH_H
+#define __BOARDS_XTENSA_ESP32_COMMON_INCLUDE_ESP32_BOARD_SPIFLASH_H
+
 /****************************************************************************
  * Included Files
  ****************************************************************************/
 
 #include <nuttx/config.h>
 
-#include <sys/types.h>
-#include <syslog.h>
-#include <arpa/inet.h>
+#ifndef __ASSEMBLY__
 
-#include <netutils/netlib.h>
-#include <netutils/dhcpd.h>
-
-#include "espressif/esp_wlan_netdev.h"
+#undef EXTERN
+#if defined(__cplusplus)
+#define EXTERN extern "C"
+extern "C"
+{
+#else
+#define EXTERN extern
+#endif
 
 /****************************************************************************
- * Pre-processor Definitions
+ * Public Function Prototypes
  ****************************************************************************/
 
 /****************************************************************************
- * Private Functions
- ****************************************************************************/
-
-/****************************************************************************
- * Public Functions
- ****************************************************************************/
-
-/****************************************************************************
- * Name: board_wlan_init
+ * Name: esp32_spiflash_init
  *
  * Description:
- *   Configure the wireless subsystem.
+ *   Initialize the SPI Flash and register the MTD.
+ *
+ * Input Parameters:
+ *   None.
  *
  * Returned Value:
- *   Zero (OK) is returned on success; A negated errno value is returned
- *   to indicate the nature of any failure.
+ *   Zero (OK) is returned on success. A negated errno value is returned
+ *   on failure.
  *
  ****************************************************************************/
 
-int board_wlan_init(void)
-{
-  int ret = OK;
+int esp32_spiflash_initialize(void);
 
-#ifdef ESP_WLAN_HAS_STA
-  ret = esp_wlan_sta_initialize();
-  if (ret)
-    {
-      syslog(LOG_ERR, "ERROR: Failed to initialize Wi-Fi station\n");
-      return ret;
-    }
-#endif /* ESP_WLAN_HAS_STA */
-
-#ifdef ESP_WLAN_HAS_SOFTAP
-  ret = esp_wlan_softap_initialize();
-  if (ret)
-    {
-      syslog(LOG_ERR, "ERROR: Failed to initialize Wi-Fi softAP\n");
-      return ret;
-    }
-#endif /* ESP_WLAN_HAS_SOFTAP */
-
-  netlib_ifup("wlan0");
-  dhcpd_start("wlan0");
-
-  return ret;
+#undef EXTERN
+#if defined(__cplusplus)
 }
+#endif
+
+#endif /* __ASSEMBLY__ */
+#endif /* __BOARDS_XTENSA_ESP32_COMMON_INCLUDE_ESP32_BOARD_SPIFLASH_H */

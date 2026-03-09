@@ -82,7 +82,7 @@ int board_wlan_init(void)
 #endif /* ESP_WLAN_HAS_SOFTAP */
 
   netlib_ifup("wlan0");
-  dhcpd_start("wlan0");
+  // dhcpd_start("wlan0");
 
   return ret;
 }
