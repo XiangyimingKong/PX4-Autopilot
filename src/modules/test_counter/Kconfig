@@ -1,0 +1,12 @@
+menuconfig MODULES_TEST_COUNTER
+	bool "test_counter"
+	default n
+	---help---
+		Enable support for test_counter
+
+menuconfig USER_TEST_COUNTER
+	bool "test_counter running as userspace module"
+	default y
+	depends on BOARD_PROTECTED && MODULES_TEST_COUNTER
+	---help---
+		Put test_counter in userspace memory
