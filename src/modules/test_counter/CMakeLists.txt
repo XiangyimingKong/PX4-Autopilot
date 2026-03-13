@@ -36,6 +36,8 @@ px4_add_module(
 	SRCS
 		TestCounter.cpp
 		TestCounter.hpp
+	MODULE_CONFIG
+		module.yaml
 	DEPENDS
 		px4_work_queue
 	)

@@ -122,6 +122,7 @@
 #include "streams/SYSTEM_TIME.hpp"
 #include "streams/TIME_ESTIMATE_TO_TARGET.hpp"
 #include "streams/TIMESYNC.hpp"
+#include "streams/TEST_COUNTER.hpp"
 #include "streams/VFR_HUD.hpp"
 #include "streams/VIBRATION.hpp"
 #include "streams/WIND_COV.hpp"
@@ -320,6 +321,9 @@ static const StreamListItem streams_list[] = {
 #if defined(TIMESYNC_HPP)
 	create_stream_list_item<MavlinkStreamTimesync>(),
 #endif // TIMESYNC_HPP
+#if defined(TEST_COUNTER_HPP)
+	create_stream_list_item<MavlinkStreamTestCounter>(),
+#endif // TEST_COUNTER_HPP
 #if defined(GLOBAL_POSITION_INT_HPP)
 	create_stream_list_item<MavlinkStreamGlobalPositionInt>(),
 #endif // GLOBAL_POSITION_INT_HPP

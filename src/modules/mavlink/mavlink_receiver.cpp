@@ -304,6 +304,10 @@ MavlinkReceiver::handle_message(mavlink_message_t *msg)
 		break;
 #endif // !CONSTRAINED_FLASH
 
+	case MAVLINK_MSG_ID_TEST_COUNTER:
+		handle_message_test_counter(msg);
+		break;
+
 	case MAVLINK_MSG_ID_GIMBAL_MANAGER_SET_ATTITUDE:
 		handle_message_gimbal_manager_set_attitude(msg);
 		break;
@@ -2824,6 +2828,20 @@ MavlinkReceiver::handle_message_debug_float_array(mavlink_message_t *msg)
 	_debug_array_pub.publish(debug_topic);
 }
 #endif // !CONSTRAINED_FLASH
+
+void
+MavlinkReceiver::handle_message_test_counter(mavlink_message_t *msg)
+{
+	mavlink_test_counter_t mavlink_msg;
+	mavlink_msg_test_counter_decode(msg, &mavlink_msg);
+
+	test_counter_s uorb_msg{};
+	uorb_msg.timestamp      = hrt_absolute_time();
+	uorb_msg.counter        = mavlink_msg.counter;
+	uorb_msg.update_freq_hz = mavlink_msg.update_freq_hz;
+
+	_test_counter_pub.publish(uorb_msg);
+}
 
 void
 MavlinkReceiver::handle_message_onboard_computer_status(mavlink_message_t *msg)

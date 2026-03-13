@@ -115,4 +115,5 @@ param set-default SENS_MAG_RATE 100
 sensors start
 
 uavcannode start
+malvink boot_complete
 unset R

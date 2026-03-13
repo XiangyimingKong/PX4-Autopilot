@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2017-2019 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2024 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,59 +31,51 @@
  *
  ****************************************************************************/
 
-/**
- *
- * TestCounter module
- *
- */
+#ifndef TEST_COUNTER_HPP
+#define TEST_COUNTER_HPP
 
-#pragma once
-
-#include <px4_platform_common/px4_config.h>
-#include <px4_platform_common/defines.h>
-#include <px4_platform_common/module.h>
-#include <px4_platform_common/module_params.h>
-#include <px4_platform_common/posix.h>
-#include <px4_platform_common/px4_work_queue/ScheduledWorkItem.hpp>
-#include <uORB/Publication.hpp>
 #include <uORB/Subscription.hpp>
 #include <uORB/topics/test_counter.h>
 
-using namespace time_literals;
-
-class TestCounter : public ModuleBase<TestCounter>, public ModuleParams, public px4::ScheduledWorkItem
+class MavlinkStreamTestCounter : public MavlinkStream
 {
 public:
-	TestCounter();
-	~TestCounter() override = default;
+	static MavlinkStream *new_instance(Mavlink *mavlink) { return new MavlinkStreamTestCounter(mavlink); }
 
-	/** @see ModuleBase */
-	static int task_spawn(int argc, char *argv[]);
+	static constexpr const char *get_name_static() { return "TEST_COUNTER"; }
+	static constexpr uint16_t get_id_static() { return MAVLINK_MSG_ID_TEST_COUNTER; }
 
-	/** @see ModuleBase */
-	static int custom_command(int argc, char *argv[]);
+	const char *get_name() const override { return get_name_static(); }
+	uint16_t get_id() override { return get_id_static(); }
 
-	/** @see ModuleBase */
-	static int print_usage(const char *reason = nullptr);
-
-	bool init();
+	unsigned get_size() override
+	{
+		return _test_counter_sub.advertised() ?
+		       (MAVLINK_MSG_ID_TEST_COUNTER_LEN + MAVLINK_NUM_NON_PAYLOAD_BYTES) : 0;
+	}
 
 private:
+	explicit MavlinkStreamTestCounter(Mavlink *mavlink) : MavlinkStream(mavlink) {}
 
-	void Run() override;
+	uORB::Subscription _test_counter_sub{ORB_ID(test_counter)};
 
-	uORB::Publication<test_counter_s> _test_counter_pub{ORB_ID(test_counter)};
-	uORB::Subscription                _test_counter_sub{ORB_ID(test_counter)};
+	bool send() override
+	{
+		test_counter_s uorb_msg;
 
-	bool        _is_sender{true};         ///< cached from TCNT_MODE at init: true=Sender, false=Receiver
-	float       _freq_hz{20.0f};          ///< cached from TCNT_FREQ_HZ at init
+		if (_test_counter_sub.update(&uorb_msg)) {
+			mavlink_test_counter_t mavlink_msg{};
+			mavlink_msg.timestamp      = uorb_msg.timestamp;
+			mavlink_msg.counter        = uorb_msg.counter;
+			mavlink_msg.update_freq_hz = uorb_msg.update_freq_hz;
 
-	uint32_t    _counter{0};
-	hrt_abstime _last_run_us{0};
-	hrt_abstime _last_rx_timestamp{0};  ///< timestamp of last received message, used to compute delta
+			mavlink_msg_test_counter_send_struct(_mavlink->get_channel(), &mavlink_msg);
 
-	DEFINE_PARAMETERS(
-		(ParamFloat<px4::params::TCNT_MODE>)    _param_tc_mode,    ///< 0.0=Receiver, 1.0=Sender
-		(ParamFloat<px4::params::TCNT_FREQ_HZ>) _param_tc_freq_hz  ///< Update rate in Hz
-	)
+			return true;
+		}
+
+		return false;
+	}
 };
+
+#endif // TEST_COUNTER_HPP

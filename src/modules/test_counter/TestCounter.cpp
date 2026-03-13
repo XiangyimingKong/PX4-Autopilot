@@ -31,6 +31,10 @@
  *
  ****************************************************************************/
 
+// param set TCNT_MODE 1.0 (Sender)
+// param set TCNT_MODE 0.0 (Receiver)
+
+
 #include "TestCounter.hpp"
 
 using namespace time_literals;
@@ -44,8 +48,13 @@ TestCounter::TestCounter() :
 bool
 TestCounter::init()
 {
-	// Schedule to run at 20Hz
-	ScheduleOnInterval(TEST_COUNTER_INTERVAL_US);
+	// Cache parameters once — both are marked reboot_required so they won't change at runtime
+	_is_sender = (_param_tc_mode.get() >= 0.5f);
+	_freq_hz   = _param_tc_freq_hz.get();
+
+	const uint32_t interval_us = (_freq_hz > 0.0f) ? (uint32_t)(1e6f / _freq_hz) : 50000U;
+
+	ScheduleOnInterval(interval_us);
 	return true;
 }
 
@@ -58,19 +67,47 @@ TestCounter::Run()
 		return;
 	}
 
+
 	const hrt_abstime now = hrt_absolute_time();
 
-	// Compute actual update frequency
-	float update_freq_hz = TEST_COUNTER_UPDATE_RATE_HZ;
+	float update_freq_hz = _freq_hz;
 
 	if (_last_run_us > 0) {
 		const float dt_s = (float)(now - _last_run_us) * 1e-6f;
-		update_freq_hz = (dt_s > 0.0f) ? (1.0f / dt_s) : TEST_COUNTER_UPDATE_RATE_HZ;
+		update_freq_hz = (dt_s > 0.0f) ? (1.0f / dt_s) : _freq_hz;
 	}
+
+
+	if (!_is_sender) {
+
+		// --- RECEIVER mode: read from uORB and print with offset timestamp ---
+		test_counter_s received{};
+		if(_test_counter_sub.updated()) {
+			_test_counter_sub.copy(&received);
+		// if (_test_counter_sub.update(&received)) {
+
+			// Compute delta between consecutive received messages
+			double delta_ms = 0.0;
+
+			if (_last_rx_timestamp > 0) {
+				delta_ms = (double)(received.timestamp - _last_rx_timestamp) * 1e-3;
+			}
+
+			_last_rx_timestamp = received.timestamp;
+
+			PX4_INFO("[RX] counter: %lu  delta: %.3f ms  freq: %.2f Hz, update freq: %.2f Hz",
+				 (unsigned long)received.counter,
+				 delta_ms,
+				 (double)received.update_freq_hz, (double)update_freq_hz);
+		}
+		_last_run_us = now;
+		return;
+	}
+
+	// --- SENDER mode: compute frequency, publish and print ---
 
 	_last_run_us = now;
 
-	// Publish the message
 	test_counter_s msg{};
 	msg.timestamp      = now;
 	msg.counter        = _counter;
@@ -78,6 +115,7 @@ TestCounter::Run()
 	_test_counter_pub.publish(msg);
 
 	_counter++;
+	PX4_INFO("[TX] counter: %ld  freq: %.2f Hz", _counter, (double)update_freq_hz);
 }
 
 int

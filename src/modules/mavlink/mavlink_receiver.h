@@ -118,6 +118,7 @@
 # include <uORB/topics/debug_value.h>
 # include <uORB/topics/debug_vect.h>
 #endif // !CONSTRAINED_FLASH
+#include <uORB/topics/test_counter.h>
 
 using namespace time_literals;
 
@@ -215,6 +216,7 @@ private:
 	void handle_message_debug_vect(mavlink_message_t *msg);
 	void handle_message_named_value_float(mavlink_message_t *msg);
 #endif // !CONSTRAINED_FLASH
+	void handle_message_test_counter(mavlink_message_t *msg);
 	void handle_message_request_event(mavlink_message_t *msg);
 
 	void CheckHeartbeats(const hrt_abstime &t, bool force = false);
@@ -335,6 +337,7 @@ private:
 	uORB::Publication<debug_value_s>			_debug_value_pub{ORB_ID(debug_value)};
 	uORB::Publication<debug_vect_s>				_debug_vect_pub{ORB_ID(debug_vect)};
 #endif // !CONSTRAINED_FLASH
+	uORB::Publication<test_counter_s>			_test_counter_pub{ORB_ID(test_counter)};
 
 	// ORB publications (multi)
 	uORB::PublicationMulti<distance_sensor_s>		_distance_sensor_pub{ORB_ID(distance_sensor)};

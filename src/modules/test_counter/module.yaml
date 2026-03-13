@@ -1,0 +1,37 @@
+module_name: test_counter
+
+parameters:
+    - group: Test Counter
+      definitions:
+
+        TCNT_MODE:
+            description:
+                short: TestCounter operating mode
+                long: |
+                    Sets whether this node acts as a counter sender
+                    (publishes uORB + MAVLink) or a counter receiver
+                    (subscribes to MAVLink and re-publishes uORB).
+            type: float
+            min: 0.0
+            max: 1.0
+            decimal: 1
+            values:
+                0.0: Receiver
+                1.0: Sender
+            reboot_required: true
+            default: 1.0
+
+        TCNT_FREQ_HZ:
+            description:
+                short: TestCounter update frequency
+                long: |
+                    Rate at which the counter is updated and the uORB topic
+                    is published. Only applies in Sender mode (TCNT_MODE=1.0).
+            type: float
+            unit: Hz
+            min: 1.0
+            max: 100.0
+            decimal: 1
+            increment: 1.0
+            reboot_required: true
+            default: 20.0

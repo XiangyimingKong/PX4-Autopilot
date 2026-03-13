@@ -4,5 +4,8 @@
 #------------------------------------------------------------------------------
 
 dhcpd_start wlan0
-mavlink start -u 14550 -o 14550 -m custom -r 1000 -x -p -s
+mavlink start -u 14550 -o 14550 -t 192.168.4.3 -m custom -r 1000 -p -s
 mavlink start -d /dev/ttyS1 -b 115200 -f -w -Z
+
+# Send TIMESYNC directly to Slave (192.168.4.3) for clock synchronisation
+mavlink stream -u 14550 -s TIMESYNC -r 40
