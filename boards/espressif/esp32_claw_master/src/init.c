@@ -189,7 +189,7 @@ esp32_board_initialize(void)
 	// /* configure LEDs */
 	board_autoled_initialize();
 	up_mdelay(2);
-	esp32_spiinitialize();
+	// esp32_spiinitialize();
 
 }
 
@@ -223,7 +223,7 @@ static struct spi_dev_s *spi2;
 #endif
 
 #ifdef CONFIG_ESP32_SPI3
-static struct spi_dev_s *spi3;
+// static struct spi_dev_s *spi3;
 #endif
 
 
@@ -240,15 +240,10 @@ __EXPORT int board_app_initialize(uintptr_t arg)
 		syslog(LOG_ERR, "DMA alloc FAILED\n");
 	}
 
-	int ret = esp32_spiflash_initialize();
-
-	if (ret) {
-		syslog(LOG_ERR, "ERROR: Failed to initialize SPI Flash\n");
-	}
 
 
 	/* initial LED state */
-	drv_led_start();
+	// drv_led_start();
 
 #ifdef CONFIG_ESP32_SPI2
 	spi2 = esp32_spibus_initialize(2);
@@ -267,31 +262,37 @@ __EXPORT int board_app_initialize(uintptr_t arg)
 #endif
 
 #ifdef CONFIG_ESP32_SPI3
-	spi3 = esp32_spibus_initialize(3);
+	// spi3 = esp32_spibus_initialize(3);
 
-	if (!spi3) {
-		syslog(LOG_ERR, "[boot] FAILED to initialize SPI port 3\n");
-		// led_on(LED_RED);
-	}
+	// if (!spi3) {
+	// 	syslog(LOG_ERR, "[boot] FAILED to initialize SPI port 3\n");
+	// 	// led_on(LED_RED);
+	// }
 
-	/* Now bind the SPI interface to the MMCSD driver */
-	int result = mmcsd_spislotinitialize(CONFIG_NSH_MMCSDMINOR, CONFIG_NSH_MMCSDSLOTNO, spi3);
+	// /* Now bind the SPI interface to the MMCSD driver */
+	// int result = mmcsd_spislotinitialize(CONFIG_NSH_MMCSDMINOR, CONFIG_NSH_MMCSDSLOTNO, spi3);
 
-	if (result != OK) {
-		syslog(LOG_ERR, "[boot] FAILED to bind SPI port 3 to the MMCSD driver\n");
-	}
+	// if (result != OK) {
+	// 	syslog(LOG_ERR, "[boot] FAILED to bind SPI port 3 to the MMCSD driver\n");
+	// }
 
 #endif
 
+	int ret = esp32_spiflash_initialize();
+
+	if (ret) {
+		syslog(LOG_ERR, "ERROR: Failed to initialize SPI Flash\n");
+	}
+
 	esp32_rt_timer_init();
 
-	led_on(GPIO_LED_BLUE);
-	up_mdelay(100);
-	led_off(GPIO_LED_BLUE);
-	up_mdelay(100);
-	led_on(GPIO_LED_BLUE);
-	up_mdelay(100);
-	led_off(GPIO_LED_BLUE);
+	// led_on(GPIO_LED_BLUE);
+	// up_mdelay(100);
+	// led_off(GPIO_LED_BLUE);
+	// up_mdelay(100);
+	// led_on(GPIO_LED_BLUE);
+	// up_mdelay(100);
+	// led_off(GPIO_LED_BLUE);
 
 
 

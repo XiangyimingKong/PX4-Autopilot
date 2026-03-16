@@ -1,0 +1,10 @@
+menu "Loadcells"
+    menuconfig COMMON_LOADCELLS
+        bool "Common load cells"
+        default n
+        select DRIVERS_LOADCELLS_HX711
+        ---help---
+            Enable default set of loadcell drivers
+
+    rsource "*/Kconfig"
+endmenu

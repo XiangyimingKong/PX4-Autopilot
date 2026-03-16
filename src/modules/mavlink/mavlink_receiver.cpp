@@ -308,6 +308,15 @@ MavlinkReceiver::handle_message(mavlink_message_t *msg)
 		handle_message_test_counter(msg);
 		break;
 
+	/* Custom messages from companion/slave devices */
+	case MAVLINK_MSG_ID_DROPBOX_STATUS:
+		handle_message_dropbox_status(msg);
+		break;
+
+	case MAVLINK_MSG_ID_PAYLOAD_MASS:
+		handle_message_payload_mass(msg);
+		break;
+
 	case MAVLINK_MSG_ID_GIMBAL_MANAGER_SET_ATTITUDE:
 		handle_message_gimbal_manager_set_attitude(msg);
 		break;
@@ -2841,6 +2850,36 @@ MavlinkReceiver::handle_message_test_counter(mavlink_message_t *msg)
 	uorb_msg.update_freq_hz = mavlink_msg.update_freq_hz;
 
 	_test_counter_pub.publish(uorb_msg);
+}
+
+void
+MavlinkReceiver::handle_message_dropbox_status(mavlink_message_t *msg)
+{
+	mavlink_dropbox_status_t mavlink_msg;
+	mavlink_msg_dropbox_status_decode(msg, &mavlink_msg);
+
+	dropbox_status_s uorb_msg{};
+	uorb_msg.timestamp = hrt_absolute_time();
+	uorb_msg.dropbox_state = mavlink_msg.dropbox_state;
+	uorb_msg.winch_state = mavlink_msg.winch_state;
+	uorb_msg.cutter_state = mavlink_msg.cutter_state;
+	uorb_msg.winch_mass = mavlink_msg.winch_mass;
+
+	_dropbox_status_pub.publish(uorb_msg);
+}
+
+void
+MavlinkReceiver::handle_message_payload_mass(mavlink_message_t *msg)
+{
+	mavlink_payload_mass_t mavlink_msg;
+	mavlink_msg_payload_mass_decode(msg, &mavlink_msg);
+
+	payload_mass_s uorb_msg{};
+	uorb_msg.timestamp = hrt_absolute_time();
+	uorb_msg.mass = mavlink_msg.mass;
+	uorb_msg.average_mass = mavlink_msg.average_mass;
+
+	_payload_mass_pub.publish(uorb_msg);
 }
 
 void

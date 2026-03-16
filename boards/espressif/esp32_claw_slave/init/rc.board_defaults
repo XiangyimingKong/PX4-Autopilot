@@ -4,7 +4,7 @@
 #------------------------------------------------------------------------------
 
 dhcpd_start wlan0
-mavlink start -u 14550 -o 14550 -t 192.168.4.1 -m custom -r 1000 -p -s
+mavlink start -u 14550 -o 14550 -t 192.168.4.1 -m custom -r 1000 -p -s -f
 mavlink start -d /dev/ttyS1 -b 115200 -f -w -Z
 
 wapi psk wlan0 nuttx12345 1 2

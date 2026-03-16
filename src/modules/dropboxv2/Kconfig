@@ -1,0 +1,12 @@
+menuconfig MODULES_DROPBOXV2
+	bool "dropboxv2"
+	default n
+	---help---
+		Enable support for dropboxv2
+
+menuconfig USER_DROPBOXV2
+	bool "dropboxv2 running as userspace module"
+	default n
+	depends on BOARD_PROTECTED && MODULES_DROPBOXV2
+	---help---
+		Put dropboxv2 in userspace memory

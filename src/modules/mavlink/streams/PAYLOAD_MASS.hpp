@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2013 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2020-2021 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,76 +31,51 @@
  *
  ****************************************************************************/
 
-/**
- * @file led.c
- *
- * PX4FMU LED backend.
- */
+#ifndef PAYLOAD_MASS_HPP
+#define PAYLOAD_MASS_HPP
 
-#include <px4_platform_common/px4_config.h>
+#include <uORB/topics/payload_mass.h>
 
-#include <stdbool.h>
-
-#include "board_config.h"
-
-#include <arch/board/board.h>
-
-/*
- * Ideally we'd be able to get these from arm_internal.h,
- * but since we want to be able to disable the NuttX use
- * of leds for system indication at will and there is no
- * separate switch, we need to build independent of the
- * CONFIG_ARCH_LEDS configuration switch.
- */
-__BEGIN_DECLS
-extern void led_init(void);
-extern void led_on(int led);
-extern void led_off(int led);
-extern void led_toggle(int led);
-__END_DECLS
-
-
-
-// static uint32_t g_ledmap[] = {
-// 	GPIO_LED_BLUE,    // Indexed by LED_BLUE
-// };
-
-__EXPORT void led_init(void)
+class MavlinkStreamPayloadMass : public MavlinkStream
 {
-	// /* Configure LED GPIOs for output */
-	// for (size_t l = 0; l < (sizeof(g_ledmap) / sizeof(g_ledmap[0])); l++) {
-	// 	px4_arch_configgpio(g_ledmap[l]);
-	// }
-}
+public:
+	static MavlinkStream *new_instance(Mavlink *mavlink) { return new MavlinkStreamPayloadMass(mavlink); }
 
-static void phy_set_led(int led, bool state)
-{
-	/* Pull Down to switch on */
-	// px4_arch_gpiowrite(g_ledmap[led], !state);
-}
+	static constexpr const char *get_name_static() { return "PAYLOAD_MASS"; }
+	static constexpr uint16_t get_id_static() { return MAVLINK_MSG_ID_PAYLOAD_MASS; }
 
-static bool phy_get_led(int led)
-{
+	const char *get_name() const override { return get_name_static(); }
+	uint16_t get_id() override { return get_id_static(); }
 
-	// return !px4_arch_gpioread(g_ledmap[led]);
-	return false;
-}
+	unsigned get_size() override
+	{
+		return _payload_mass_sub.advertised() ? MAVLINK_MSG_ID_PAYLOAD_MASS_LEN + MAVLINK_NUM_NON_PAYLOAD_BYTES : 0;
 
-__EXPORT void led_on(int led)
-{
-	// phy_set_led(led, true);
-	return;
-}
+	}
 
-__EXPORT void led_off(int led)
-{
-	// phy_set_led(led, false);
-	return;
-}
 
-__EXPORT void led_toggle(int led)
-{
+private:
+	explicit MavlinkStreamPayloadMass(Mavlink *mavlink) : MavlinkStream(mavlink) {}
 
-	// phy_set_led(led, !phy_get_led(led));
-	return;
-}
+	uORB::Subscription _payload_mass_sub{ORB_ID(payload_mass)};
+
+
+	bool send() override
+	{
+		payload_mass_s payload_mass{};
+		bool sent = false;
+
+
+
+		if (_payload_mass_sub.update(&payload_mass)) {
+			mavlink_payload_mass_t mavlink_payload_mass{};
+			mavlink_payload_mass.mass = payload_mass.mass;
+			mavlink_msg_payload_mass_send_struct(_mavlink->get_channel(), &mavlink_payload_mass);
+			sent = true;
+		}
+
+		return sent;
+	}
+};
+
+#endif // PAYLOAD_MASS_HPP

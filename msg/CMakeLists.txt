@@ -222,6 +222,8 @@ set(msg_files
 	TimesyncStatus.msg
 	TrajectorySetpoint6dof.msg
 	TransponderReport.msg
+	DropboxStatus.msg
+	PayloadMass.msg
 	TuneControl.msg
 	UavcanParameterRequest.msg
 	UavcanParameterValue.msg
@@ -242,6 +244,7 @@ set(msg_files
 	VehicleTorqueSetpoint.msg
 	VelocityLimits.msg
 	WheelEncoders.msg
+	WinchMass.msg
 	YawEstimatorStatus.msg
 	versioned/ActuatorMotors.msg
 	versioned/ActuatorServos.msg

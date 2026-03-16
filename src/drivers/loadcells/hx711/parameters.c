@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2013 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2017 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,75 +32,42 @@
  ****************************************************************************/
 
 /**
- * @file led.c
+ * HX711 Calibration offset
  *
- * PX4FMU LED backend.
+ * @reboot_required true
+ * @volatile true
  */
+PARAM_DEFINE_FLOAT(HX711_FACTOR, 1.0);
 
-#include <px4_platform_common/px4_config.h>
-
-#include <stdbool.h>
-
-#include "board_config.h"
-
-#include <arch/board/board.h>
-
-/*
- * Ideally we'd be able to get these from arm_internal.h,
- * but since we want to be able to disable the NuttX use
- * of leds for system indication at will and there is no
- * separate switch, we need to build independent of the
- * CONFIG_ARCH_LEDS configuration switch.
+/**
+ * HX711 Max Load
+ *
+ * @min 0
+ * @reboot_required true
  */
-__BEGIN_DECLS
-extern void led_init(void);
-extern void led_on(int led);
-extern void led_off(int led);
-extern void led_toggle(int led);
-__END_DECLS
+PARAM_DEFINE_FLOAT(HX711_OFFSET, 0);
 
+/**
+ * HX711 Output Topic
+ *
+ * Selects which uORB topic the HX711 publishes to.
+ * 0 = payload_mass (default)
+ * 1 = winch_mass
+ *
+ * @value 0 Payload Mass
+ * @value 1 Winch Mass
+ * @min 0
+ * @max 1
+ * @reboot_required true
+ */
+PARAM_DEFINE_INT32(HX711_TOPIC, 0);
 
-
-// static uint32_t g_ledmap[] = {
-// 	GPIO_LED_BLUE,    // Indexed by LED_BLUE
-// };
-
-__EXPORT void led_init(void)
-{
-	// /* Configure LED GPIOs for output */
-	// for (size_t l = 0; l < (sizeof(g_ledmap) / sizeof(g_ledmap[0])); l++) {
-	// 	px4_arch_configgpio(g_ledmap[l]);
-	// }
-}
-
-static void phy_set_led(int led, bool state)
-{
-	/* Pull Down to switch on */
-	// px4_arch_gpiowrite(g_ledmap[led], !state);
-}
-
-static bool phy_get_led(int led)
-{
-
-	// return !px4_arch_gpioread(g_ledmap[led]);
-	return false;
-}
-
-__EXPORT void led_on(int led)
-{
-	// phy_set_led(led, true);
-	return;
-}
-
-__EXPORT void led_off(int led)
-{
-	// phy_set_led(led, false);
-	return;
-}
-
-__EXPORT void led_toggle(int led)
-{
-
-	// phy_set_led(led, !phy_get_led(led));
-	return;
-}
+/**
+ * HX711 Max Load
+ *
+ * Max load the sensor can measure
+ *
+ * @min 0
+ * @reboot_required true
+ */
+PARAM_DEFINE_FLOAT(HX711_MAX_LOAD, 20.0);

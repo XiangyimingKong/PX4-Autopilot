@@ -61,42 +61,46 @@ __END_DECLS
 
 
 
-static uint32_t g_ledmap[] = {
-	GPIO_LED_BLUE,    // Indexed by LED_BLUE
-};
+// static uint32_t g_ledmap[] = {
+// 	GPIO_LED_BLUE,    // Indexed by LED_BLUE
+// };
 
 __EXPORT void led_init(void)
 {
 	/* Configure LED GPIOs for output */
-	for (size_t l = 0; l < (sizeof(g_ledmap) / sizeof(g_ledmap[0])); l++) {
-		px4_arch_configgpio(g_ledmap[l]);
-	}
+	// for (size_t l = 0; l < (sizeof(g_ledmap) / sizeof(g_ledmap[0])); l++) {
+	// 	px4_arch_configgpio(g_ledmap[l]);
+	// }
 }
 
 static void phy_set_led(int led, bool state)
 {
 	/* Pull Down to switch on */
-	px4_arch_gpiowrite(g_ledmap[led], !state);
+	// px4_arch_gpiowrite(g_ledmap[led], !state);
 }
 
 static bool phy_get_led(int led)
 {
 
-	return !px4_arch_gpioread(g_ledmap[led]);
+	// return !px4_arch_gpioread(g_ledmap[led]);
+	return false;
 }
 
 __EXPORT void led_on(int led)
 {
-	phy_set_led(led, true);
+	// phy_set_led(led, true);
+	return;
 }
 
 __EXPORT void led_off(int led)
 {
-	phy_set_led(led, false);
+	// phy_set_led(led, false);
+	return;
 }
 
 __EXPORT void led_toggle(int led)
 {
 
-	phy_set_led(led, !phy_get_led(led));
+	// phy_set_led(led, !phy_get_led(led));
+	return;
 }

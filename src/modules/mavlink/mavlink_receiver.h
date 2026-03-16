@@ -120,6 +120,9 @@
 #endif // !CONSTRAINED_FLASH
 #include <uORB/topics/test_counter.h>
 
+#include <uORB/topics/dropbox_status.h>
+#include <uORB/topics/payload_mass.h>
+
 using namespace time_literals;
 
 class Mavlink;
@@ -217,6 +220,10 @@ private:
 	void handle_message_named_value_float(mavlink_message_t *msg);
 #endif // !CONSTRAINED_FLASH
 	void handle_message_test_counter(mavlink_message_t *msg);
+
+	void handle_message_dropbox_status(mavlink_message_t *msg);
+
+	void handle_message_payload_mass(mavlink_message_t *msg);
 	void handle_message_request_event(mavlink_message_t *msg);
 
 	void CheckHeartbeats(const hrt_abstime &t, bool force = false);
@@ -338,6 +345,8 @@ private:
 	uORB::Publication<debug_vect_s>				_debug_vect_pub{ORB_ID(debug_vect)};
 #endif // !CONSTRAINED_FLASH
 	uORB::Publication<test_counter_s>			_test_counter_pub{ORB_ID(test_counter)};
+	uORB::Publication<dropbox_status_s>		_dropbox_status_pub{ORB_ID(dropbox_status)};
+	uORB::Publication<payload_mass_s>		_payload_mass_pub{ORB_ID(payload_mass)};
 
 	// ORB publications (multi)
 	uORB::PublicationMulti<distance_sensor_s>		_distance_sensor_pub{ORB_ID(distance_sensor)};

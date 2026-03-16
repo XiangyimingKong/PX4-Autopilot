@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2013 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2020-2021 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,76 +31,49 @@
  *
  ****************************************************************************/
 
-/**
- * @file led.c
- *
- * PX4FMU LED backend.
- */
+#ifndef DROPBOX_STATUS_HPP
+#define DROPBOX_STATUS_HPP
 
-#include <px4_platform_common/px4_config.h>
+#include <uORB/topics/dropbox_status.h>
 
-#include <stdbool.h>
-
-#include "board_config.h"
-
-#include <arch/board/board.h>
-
-/*
- * Ideally we'd be able to get these from arm_internal.h,
- * but since we want to be able to disable the NuttX use
- * of leds for system indication at will and there is no
- * separate switch, we need to build independent of the
- * CONFIG_ARCH_LEDS configuration switch.
- */
-__BEGIN_DECLS
-extern void led_init(void);
-extern void led_on(int led);
-extern void led_off(int led);
-extern void led_toggle(int led);
-__END_DECLS
-
-
-
-// static uint32_t g_ledmap[] = {
-// 	GPIO_LED_BLUE,    // Indexed by LED_BLUE
-// };
-
-__EXPORT void led_init(void)
+class MavlinkStreamDropboxStatus : public MavlinkStream
 {
-	// /* Configure LED GPIOs for output */
-	// for (size_t l = 0; l < (sizeof(g_ledmap) / sizeof(g_ledmap[0])); l++) {
-	// 	px4_arch_configgpio(g_ledmap[l]);
-	// }
-}
+public:
+	static MavlinkStream *new_instance(Mavlink *mavlink) { return new MavlinkStreamDropboxStatus(mavlink); }
 
-static void phy_set_led(int led, bool state)
-{
-	/* Pull Down to switch on */
-	// px4_arch_gpiowrite(g_ledmap[led], !state);
-}
+	static constexpr const char *get_name_static() { return "DROPBOX_STATUS"; }
+	static constexpr uint16_t get_id_static() { return MAVLINK_MSG_ID_DROPBOX_STATUS; }
 
-static bool phy_get_led(int led)
-{
+	const char *get_name() const override { return get_name_static(); }
+	uint16_t get_id() override { return get_id_static(); }
 
-	// return !px4_arch_gpioread(g_ledmap[led]);
-	return false;
-}
+	unsigned get_size() override
+	{
+		return _dropbox_status_sub.advertised() ? MAVLINK_MSG_ID_DROPBOX_STATUS_LEN + MAVLINK_NUM_NON_PAYLOAD_BYTES : 0;
+	}
 
-__EXPORT void led_on(int led)
-{
-	// phy_set_led(led, true);
-	return;
-}
+private:
+	explicit MavlinkStreamDropboxStatus(Mavlink *mavlink) : MavlinkStream(mavlink) {}
 
-__EXPORT void led_off(int led)
-{
-	// phy_set_led(led, false);
-	return;
-}
+	uORB::Subscription _dropbox_status_sub{ORB_ID(dropbox_status)};
 
-__EXPORT void led_toggle(int led)
-{
+	bool send() override
+	{
+		dropbox_status_s dropbox_status{};
+		bool sent = false;
 
-	// phy_set_led(led, !phy_get_led(led));
-	return;
-}
+		if (_dropbox_status_sub.update(&dropbox_status)) {
+			mavlink_dropbox_status_t mavlink_dropbox_status{};
+			mavlink_dropbox_status.dropbox_state = dropbox_status.dropbox_state;
+			mavlink_dropbox_status.winch_state = dropbox_status.winch_state;
+			mavlink_dropbox_status.cutter_state = dropbox_status.cutter_state;
+			mavlink_dropbox_status.winch_mass = dropbox_status.winch_mass;
+			mavlink_msg_dropbox_status_send_struct(_mavlink->get_channel(), &mavlink_dropbox_status);
+			sent = true;
+		}
+
+		return sent;
+	}
+};
+
+#endif // DROPBOX_STATUS_HPP

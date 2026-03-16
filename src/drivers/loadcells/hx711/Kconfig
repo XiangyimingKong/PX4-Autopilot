@@ -1,0 +1,5 @@
+menuconfig DRIVERS_LOADCELLS_HX711
+	bool "hx711"
+	default n
+	---help---
+		Enable support for hx711 loadcell amplifier
