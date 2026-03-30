@@ -72,8 +72,8 @@ private:
 
 	void Run() override;
 
-	uORB::Publication<test_counter_s> _test_counter_pub{ORB_ID(test_counter)};
-	uORB::Subscription                _test_counter_sub{ORB_ID(test_counter)};
+	uORB::Publication<test_counter_s> _test_counter_pub{ORB_ID(test_counter_tx)};
+	uORB::Subscription                _test_counter_sub{ORB_ID(test_counter_rx)};
 
 	bool        _is_sender{true};         ///< cached from TCNT_MODE at init: true=Sender, false=Receiver
 	float       _freq_hz{20.0f};          ///< cached from TCNT_FREQ_HZ at init

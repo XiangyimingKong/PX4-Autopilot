@@ -81,8 +81,9 @@ TestCounter::Run()
 	if (!_is_sender) {
 
 		// --- RECEIVER mode: read from uORB and print with offset timestamp ---
-		test_counter_s received{};
+
 		if(_test_counter_sub.updated()) {
+			test_counter_s received{};
 			_test_counter_sub.copy(&received);
 		// if (_test_counter_sub.update(&received)) {
 
@@ -114,8 +115,10 @@ TestCounter::Run()
 	msg.update_freq_hz = update_freq_hz;
 	_test_counter_pub.publish(msg);
 
+	if (_counter % 10 == 0) {
+		PX4_INFO("[TX] counter: %ld  freq: %.2f Hz", _counter, (double)update_freq_hz);
+	}
 	_counter++;
-	PX4_INFO("[TX] counter: %ld  freq: %.2f Hz", _counter, (double)update_freq_hz);
 }
 
 int

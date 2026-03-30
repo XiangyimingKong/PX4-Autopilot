@@ -344,7 +344,7 @@ private:
 	uORB::Publication<debug_value_s>			_debug_value_pub{ORB_ID(debug_value)};
 	uORB::Publication<debug_vect_s>				_debug_vect_pub{ORB_ID(debug_vect)};
 #endif // !CONSTRAINED_FLASH
-	uORB::Publication<test_counter_s>			_test_counter_pub{ORB_ID(test_counter)};
+	uORB::Publication<test_counter_s>			_test_counter_rx_pub{ORB_ID(test_counter_rx)};
 	uORB::Publication<dropbox_status_s>		_dropbox_status_pub{ORB_ID(dropbox_status)};
 	uORB::Publication<payload_mass_s>		_payload_mass_pub{ORB_ID(payload_mass)};
 

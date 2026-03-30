@@ -2849,7 +2849,7 @@ MavlinkReceiver::handle_message_test_counter(mavlink_message_t *msg)
 	uorb_msg.counter        = mavlink_msg.counter;
 	uorb_msg.update_freq_hz = mavlink_msg.update_freq_hz;
 
-	_test_counter_pub.publish(uorb_msg);
+	_test_counter_rx_pub.publish(uorb_msg);
 }
 
 void

@@ -57,7 +57,7 @@ public:
 private:
 	explicit MavlinkStreamTestCounter(Mavlink *mavlink) : MavlinkStream(mavlink) {}
 
-	uORB::Subscription _test_counter_sub{ORB_ID(test_counter)};
+	uORB::Subscription _test_counter_sub{ORB_ID(test_counter_tx)};
 
 	bool send() override
 	{
@@ -67,6 +67,7 @@ private:
 			mavlink_test_counter_t mavlink_msg{};
 			mavlink_msg.timestamp      = uorb_msg.timestamp;
 			mavlink_msg.counter        = uorb_msg.counter;
+			printf("counter = %lu\n", (unsigned long)uorb_msg.counter);
 			mavlink_msg.update_freq_hz = uorb_msg.update_freq_hz;
 
 			mavlink_msg_test_counter_send_struct(_mavlink->get_channel(), &mavlink_msg);
