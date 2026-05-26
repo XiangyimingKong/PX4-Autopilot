@@ -82,6 +82,12 @@ private:
 	hrt_abstime _last_run_us{0};
 	hrt_abstime _last_rx_timestamp{0};  ///< timestamp of last received message, used to compute delta
 
+	static constexpr uint8_t RX_RATE_WINDOW_S{5};
+	static constexpr uint16_t RX_TS_BUFFER_SIZE{256};
+	hrt_abstime _rx_timestamps[RX_TS_BUFFER_SIZE]{};
+	uint16_t _rx_ts_head{0};
+	uint16_t _rx_ts_count{0};
+
 	DEFINE_PARAMETERS(
 		(ParamFloat<px4::params::TCNT_MODE>)    _param_tc_mode,    ///< 0.0=Receiver, 1.0=Sender
 		(ParamFloat<px4::params::TCNT_FREQ_HZ>) _param_tc_freq_hz  ///< Update rate in Hz

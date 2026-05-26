@@ -82,10 +82,9 @@ TestCounter::Run()
 
 		// --- RECEIVER mode: read from uORB and print with offset timestamp ---
 
-		if(_test_counter_sub.updated()) {
+		if (_test_counter_sub.updated()) {
 			test_counter_s received{};
-			_test_counter_sub.copy(&received);
-		// if (_test_counter_sub.update(&received)) {
+			_test_counter_sub.update(&received);
 
 			// Compute delta between consecutive received messages
 			double delta_ms = 0.0;
@@ -96,10 +95,47 @@ TestCounter::Run()
 
 			_last_rx_timestamp = received.timestamp;
 
-			PX4_INFO("[RX] counter: %lu  delta: %.3f ms  freq: %.2f Hz, update freq: %.2f Hz",
+			// Rolling 5 second receive-rate estimate from locally observed arrivals.
+			_rx_timestamps[_rx_ts_head] = now;
+			_rx_ts_head = (_rx_ts_head + 1) % RX_TS_BUFFER_SIZE;
+
+			if (_rx_ts_count < RX_TS_BUFFER_SIZE) {
+				_rx_ts_count++;
+			}
+
+			while (_rx_ts_count > 0) {
+				const uint16_t oldest_idx = (_rx_ts_head + RX_TS_BUFFER_SIZE - _rx_ts_count) % RX_TS_BUFFER_SIZE;
+
+				if (now - _rx_timestamps[oldest_idx] > RX_RATE_WINDOW_S * 1_s) {
+					_rx_ts_count--;
+
+				} else {
+					break;
+				}
+			}
+
+			float rx_rate_5s_hz = 0.0f;
+
+			if (_rx_ts_count > 0) {
+				const uint16_t oldest_idx = (_rx_ts_head + RX_TS_BUFFER_SIZE - _rx_ts_count) % RX_TS_BUFFER_SIZE;
+				const float window_s = math::max((float)(now - _rx_timestamps[oldest_idx]) * 1e-6f, 1e-3f);
+				rx_rate_5s_hz = _rx_ts_count / window_s;
+			}
+
+			constexpr float expected_rate_hz = 20.0f;
+			float dropout_pct = (1.0f - (rx_rate_5s_hz / expected_rate_hz)) * 100.0f;
+
+			if (dropout_pct < 0.0f) {
+				dropout_pct = 0.0f;
+
+			} else if (dropout_pct > 100.0f) {
+				dropout_pct = 100.0f;
+			}
+
+			PX4_INFO("[RX] counter: %lu  delta: %.3f ms  rx_5s: %.2f Hz  dropout: %.1f%%",
 				 (unsigned long)received.counter,
 				 delta_ms,
-				 (double)received.update_freq_hz, (double)update_freq_hz);
+				 (double)rx_rate_5s_hz, (double)dropout_pct);
 		}
 		_last_run_us = now;
 		return;
